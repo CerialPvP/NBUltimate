@@ -1,0 +1,26 @@
+# $$\   $$\ $$$$$$$\  $$\   $$\ $$\   $$\     $$\                          $$\
+# $$$\  $$ |$$  __$$\ $$ |  $$ |$$ |  $$ |    \__|                         $$ |
+# $$$$\ $$ |$$ |  $$ |$$ |  $$ |$$ |$$$$$$\   $$\ $$$$$$\$$$$\   $$$$$$\ $$$$$$\    $$$$$$\
+# $$ $$\$$ |$$$$$$$\ |$$ |  $$ |$$ |\_$$  _|  $$ |$$  _$$  _$$\  \____$$\\_$$  _|  $$  __$$\
+# $$ \$$$$ |$$  __$$\ $$ |  $$ |$$ |  $$ |    $$ |$$ / $$ / $$ | $$$$$$$ | $$ |    $$$$$$$$ |
+# $$ |\$$$ |$$ |  $$ |$$ |  $$ |$$ |  $$ |$$\ $$ |$$ | $$ | $$ |$$  __$$ | $$ |$$\ $$   ____|
+# $$ | \$$ |$$$$$$$  |\$$$$$$  |$$ |  \$$$$  |$$ |$$ | $$ | $$ |\$$$$$$$ | \$$$$  |\$$$$$$$\
+# \__|  \__|\_______/  \______/ \__|   \____/ \__|\__| \__| \__| \_______|  \____/  \_______|
+
+# This configuration allows you to make NBUltimate your own.
+# To prevent errors, make sure to input valid values, otherwise the config will not work.
+
+# Note Debugging
+# - Every time a note is played in a song, the note's information is sent to chat.
+# - The information contains the sound, pitch and volume.
+# - Keep in mind this will spam your chat, so this should only be enabled for debugging.
+# Type: boolean
+note-debug: false
+
+# WorldGuard Support
+# - If this is enabled, when the plugin loads, it attempts to hook into WorldGuard.
+# - This should be enabled if:
+#    1) You have WorldGuard installed on your server;
+#    2) You want to use the regional music player.
+# Type: boolean
+worldguard: true

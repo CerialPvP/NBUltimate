@@ -1,21 +1,24 @@
 package cc.cerial.nbultimate.commands;
 
+import cc.cerial.nbultimate.NBSong;
 import cc.cerial.nbultimate.NBUltimate;
 import cc.cerial.nbultimate.Utils;
 import cc.cerial.nbultimate.noteblock.NBCallback;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.raphimc.noteblocklib.NoteBlockLib;
+import net.raphimc.noteblocklib.format.midi.MidiSong;
 import net.raphimc.noteblocklib.format.nbs.NbsSong;
+import net.raphimc.noteblocklib.model.Song;
+import net.raphimc.noteblocklib.model.SongView;
 import net.raphimc.noteblocklib.player.SongPlayer;
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
+import net.raphimc.noteblocklib.util.SongUtil;
 import revxrsal.commands.annotation.AutoComplete;
 import revxrsal.commands.annotation.Command;
 import revxrsal.commands.annotation.Description;
 import revxrsal.commands.bukkit.BukkitCommandActor;
 import revxrsal.commands.bukkit.annotation.CommandPermission;
 
+import javax.sound.midi.MidiFileFormat;
 import java.io.File;
 
 public class PlayCommand {
@@ -25,7 +28,7 @@ public class PlayCommand {
     @AutoComplete("@songs *")
     public void play(
             BukkitCommandActor actor,
-            String song
+            @NBSong String song
     ) {
         // Add "plugins/NBUltimate/songs" if there isn't and make a file instance.
         if (!song.contains("plugins/NBUltimate/songs/")) {
@@ -33,39 +36,46 @@ public class PlayCommand {
         }
 
         File file = new File(song);
-        NbsSong nbsong;
+        Song<?,?,?> nbsong;
         try {
-            nbsong = (NbsSong) NoteBlockLib.readSong(file);
+            nbsong = NoteBlockLib.readSong(file);
         } catch (Exception e) {
             Utils.sendMessage(actor.getSender(), "&cAn error has occurred while reading the song &n"+song+"&c.");
             return;
         }
 
-        // Information
-        String title = Utils.replaceIfBlank(nbsong.getHeader().getTitle(), "Unknown Title");
-        String name = file.getName();
-        String author = Utils.replaceIfBlank(nbsong.getHeader().getAuthor(), "Unknown Author");
-        String ogauthor = Utils.replaceIfBlank(nbsong.getHeader().getOriginalAuthor(), "Unknown Original Author");
-        double speed = (double) nbsong.getHeader().getSpeed() / 100;
-        double bpmspeed = speed * 15;
-        double oglength = nbsong.getHeader().getLength();
-        String length = Utils.calcTime(oglength/speed);
+        // Remove any silent notes and support tempo changers
+        SongUtil.removeSilentNotes(nbsong.getView());
 
-        MiniMessage mm = MiniMessage.miniMessage();
-        Component message = Utils.getPrefix().append(
-                mm.deserialize(" <dark_gray>></dark_gray> <gold>Currently playing:</gold>\n" +
-                        "<gray>•</gray> <#ED8B40><bold><hover:show_text:'<#ED8B40>The title of the song, set in the OpenNBS program.'>Song Title:</hover></bold></#ED8B40> <#C9702B>"+title+"</#C9702B>\n" +
-                        "<gray>•</gray> <#ED8B40><bold><hover:show_text:'<#ED8B40>The name of the song file.'>Track File Name:</hover></bold></#ED8B40> <#C9702B>"+name+"</#C9702B>\n" +
-                        "<gray>•</gray> <#ED8B40><bold><hover:show_text:'<#ED8B40>The author of the song, set in the OpenNBS program.'>File Author:</hover></bold></#ED8B40> <#C9702B>"+author+"</#C9702B>\n" +
-                        "<gray>•</gray> <#ED8B40><bold><hover:show_text:'<#ED8B40>The original author of the song, set in the OpenNBS program.'>Original Title:</hover></bold></#ED8B40> <#C9702B>"+ogauthor+"</#C9702B>\n" +
-                        "<gray>•</gray> <#ED8B40><bold><hover:show_text:'<#ED8B40>The speed of the song, measured in Ticks Per Second and Beats Per Minute.'>Speed:</hover></bold></#ED8B40> <#C9702B>"+speed+" TPS / "+bpmspeed+" BPM</#C9702B>\n" +
-                        "<gray>•</gray> <#ED8B40><bold><hover:show_text:'<#ED8B40>The length of the song, in minutes and seconds.'>Length:</hover></bold></#ED8B40> <#C9702B>"+length+"</#C9702B>")
-        );
-        // Send to all players and console
-        NBUltimate.getAdventure().console().sendMessage(message);
-        for (Player player: Bukkit.getOnlinePlayers()) {
-            NBUltimate.getAdventure().player(player).sendMessage(message);
+        // Information
+        SongView<?> view = nbsong.getView();
+        String title = Utils.replaceIfBlank(view.getTitle(), "Unknown Title");
+        String name = file.getName();
+        String author = "Unavailable"; // Retrieved via format
+        String ogauthor = "Unavailable"; // Retrieved only via NBS
+        float speed = view.getSpeed();
+        float bpmspeed = speed * 15;
+        int oglength = view.getLength();
+        String length = Utils.calcTime(oglength / speed);
+
+        if (nbsong instanceof NbsSong nbsSong) {
+            author = Utils.replaceIfBlank(nbsSong.getHeader().getAuthor(), "Unknown Author");
+            ogauthor = Utils.replaceIfBlank(nbsSong.getHeader().getOriginalAuthor(), "Unknown Original Author");
+        } else if (nbsong instanceof MidiSong midiSong) {
+            MidiFileFormat mff = midiSong.getHeader().getMidiFileFormat();
+            // https://docs.oracle.com/en/java/javase/17/docs/api/java.desktop/javax/sound/midi/MidiFileFormat.html
+            author = (String) Utils.replaceIfNull(mff.properties().get("author"), "Unknown Author");
         }
+
+        NBUltimate.getAdventure().all().sendMessage(
+                MiniMessage.miniMessage().deserialize("<gradient:#8a4007:#ed8b40><bold>NBUltimate</bold></gradient> <dark_gray>></dark_gray> <gold>Currently playing:</gold>\n" +
+                        "<gray>•</gray> <#ED8B40><bold><hover:show_text:'<#ED8B40>The title of the song, set in the OpenNBS program.</#ED8B40>'>Song Title:</hover></bold></#ED8B40> <#C9702B>"+title+"</#C9702B>\n" +
+                        "<gray>•</gray> <#ED8B40><bold><hover:show_text:'<#ED8B40>The name of the song file.</#ED8B40>'>Track File Name:</hover></bold></#ED8B40> <#C9702B>"+name+"</#C9702B>\n" +
+                        "<gray>•</gray> <#ED8B40><bold><hover:show_text:'<#ED8B40>The author of the song, set in the OpenNBS program.</#ED8B40>'>File Author:</hover></bold></#ED8B40> <#C9702B>"+author+"</#C9702B>\n" +
+                        "<gray>•</gray> <#ED8B40><bold><hover:show_text:'<#ED8B40>The original author of the song, set in the OpenNBS program.</#ED8B40>'>Original Author:</hover></bold></#ED8B40> <#C9702B>"+ogauthor+"</#C9702B>\n" +
+                        "<gray>•</gray> <#ED8B40><bold><hover:show_text:'<#ED8B40>The speed of the song, measured in Ticks Per Second and Beats Per Minute.</#ED8B40>'>Speed:</hover></bold></#ED8B40> <#C9702B>"+speed+" TPS / "+bpmspeed+" BPM</#C9702B>\n" +
+                        "<gray>•</gray> <#ED8B40><bold><hover:show_text:'<#ED8B40>The length of the song, in minutes and seconds.</#ED8B40>'>Length:</hover></bold></#ED8B40> <#C9702B>"+length+"</#C9702B>")
+        );
 
         // TODO: Write actual queue manager
         SongPlayer player = new SongPlayer(nbsong.getView(), new NBCallback(nbsong));

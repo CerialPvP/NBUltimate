@@ -1,5 +1,9 @@
 package cc.cerial.nbultimate.noteblock;
 
+import cc.cerial.nbultimate.NBUltimate;
+import cc.cerial.nbultimate.Utils;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.raphimc.noteblocklib.format.nbs.NbsDefinitions;
 import net.raphimc.noteblocklib.format.nbs.NbsSong;
 import net.raphimc.noteblocklib.format.nbs.model.NbsNote;
 import net.raphimc.noteblocklib.model.Note;
@@ -42,7 +46,7 @@ public class NBCallback implements ISongPlayerCallback {
             NbsSong nbssong = (NbsSong) song;
             int customID = id-nbssong.getHeader().getVanillaInstrumentCount();
             String[] splitInstrument = nbssong.getData().getCustomInstruments().get(customID).getSoundFileName().split("/");
-            return splitInstrument[splitInstrument.length-1].replaceAll("\\.", "_").toUpperCase();
+            return splitInstrument[splitInstrument.length-1].replaceAll("\\.", "_").replaceAll("\\.ogg", "").toUpperCase();
         }
     }
 
@@ -68,11 +72,23 @@ public class NBCallback implements ISongPlayerCallback {
 
         String instrument = getNoteInstrument(note);
         if (instrument == null) return;
-        // Getting the pitch.
-        float pitch = MinecraftDefinitions.mcKeyToMcPitch(MinecraftDefinitions.nbsKeyToMcKey(note.getKey()));
+        if (note instanceof NbsNote nbsNote) {
+            int pitch = NbsDefinitions.getPitch(nbsNote);
+            nbsNote.setKey((byte) NbsDefinitions.getKey(nbsNote));
+            nbsNote.setPitch((short) (pitch % NbsDefinitions.PITCHES_PER_KEY));
+        }
+
+        // Calculate pitch
+        float pitch;
+        if (note instanceof NbsNote nbsNote) {
+            pitch = Utils.clamp(MinecraftDefinitions.nbsPitchToMcPitch(NbsDefinitions.getPitch(nbsNote)), 0f, 2f);
+        } else {
+            pitch = MinecraftDefinitions.mcKeyToMcPitch(MinecraftDefinitions.nbsKeyToMcKey(note.getKey()));
+        }
+
         float volume;
         if (note instanceof NoteWithVolume noteWithVolume) {
-            volume = noteWithVolume.getVolume();
+            volume = noteWithVolume.getVolume()/100;
         } else {
             volume = 0f;
         }
@@ -84,6 +100,15 @@ public class NBCallback implements ISongPlayerCallback {
             panning = 0f;
         }
 
+        if (NBUltimate.getInstance().getConfig().getBoolean("note-debug"))
+            NBUltimate.getAdventure().all().sendMessage(
+                    MiniMessage.miniMessage().deserialize("<gradient:#8a4007:#ed8b40><bold>NBUltimate</bold></gradient> <dark_gray>></dark_gray> <red>Note Debugging:</red>\n" +
+                            "<gray>•</gray> <#ED8B40><bold>Sound:</bold></#ED8B40> <#C9702B>"+instrument+"</#C9702B>\n" +
+                            "<gray>•</gray> <#ED8B40><bold>Pitch:</bold></#ED8B40> <#C9702B>"+pitch+"</#C9702B>\n"+
+                            "<gray>•</gray> <#ED8B40><bold>Volume:</bold></#ED8B40> <#C9702B>"+volume+"</#C9702B>\n"+
+                            "<gray>•</gray> <#ED8B40><bold>Panning:</bold></#ED8B40> <#C9702B>"+panning+"</#C9702B>")
+            );
+
         for (Player player: Bukkit.getOnlinePlayers()) {
             double div;
             if (panning < 0f) {
@@ -94,7 +119,6 @@ public class NBCallback implements ISongPlayerCallback {
 
             Location loc = getLocationOfDir(panning, div, player.getLocation());
             player.playSound(loc, instrument, volume, pitch);
-            // TODO: Debug mode (toggleable using config)
         }
     }
 }
