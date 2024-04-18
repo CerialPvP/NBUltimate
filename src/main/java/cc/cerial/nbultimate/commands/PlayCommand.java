@@ -3,6 +3,7 @@ package cc.cerial.nbultimate.commands;
 import cc.cerial.nbultimate.NBSong;
 import cc.cerial.nbultimate.NBUltimate;
 import cc.cerial.nbultimate.Utils;
+import cc.cerial.nbultimate.noteblock.GlobalSongPlayer;
 import cc.cerial.nbultimate.noteblock.NBCallback;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.raphimc.noteblocklib.NoteBlockLib;
@@ -11,6 +12,7 @@ import net.raphimc.noteblocklib.format.nbs.NbsSong;
 import net.raphimc.noteblocklib.model.Song;
 import net.raphimc.noteblocklib.model.SongView;
 import net.raphimc.noteblocklib.player.SongPlayer;
+import net.raphimc.noteblocklib.util.SongResampler;
 import net.raphimc.noteblocklib.util.SongUtil;
 import revxrsal.commands.annotation.AutoComplete;
 import revxrsal.commands.annotation.Command;
@@ -44,7 +46,7 @@ public class PlayCommand {
             return;
         }
 
-        // Remove any silent notes and support tempo changers
+        // Remove any silent notes
         SongUtil.removeSilentNotes(nbsong.getView());
 
         // Information
@@ -58,13 +60,19 @@ public class PlayCommand {
         int oglength = view.getLength();
         String length = Utils.calcTime(oglength / speed);
 
+        SongPlayer songPlayer;
         if (nbsong instanceof NbsSong nbsSong) {
+            SongResampler.applyNbsTempoChangers(nbsSong);
             author = Utils.replaceIfBlank(nbsSong.getHeader().getAuthor(), "Unknown Author");
             ogauthor = Utils.replaceIfBlank(nbsSong.getHeader().getOriginalAuthor(), "Unknown Original Author");
+            songPlayer = new GlobalSongPlayer(nbsSong, new NBCallback(nbsSong));
         } else if (nbsong instanceof MidiSong midiSong) {
             MidiFileFormat mff = midiSong.getHeader().getMidiFileFormat();
             // https://docs.oracle.com/en/java/javase/17/docs/api/java.desktop/javax/sound/midi/MidiFileFormat.html
             author = (String) Utils.replaceIfNull(mff.properties().get("author"), "Unknown Author");
+            songPlayer = new GlobalSongPlayer(midiSong, new NBCallback(midiSong));
+        } else {
+            songPlayer = new GlobalSongPlayer(nbsong, new NBCallback(nbsong));
         }
 
         NBUltimate.getAdventure().all().sendMessage(
@@ -77,8 +85,7 @@ public class PlayCommand {
                         "<gray>•</gray> <#ED8B40><bold><hover:show_text:'<#ED8B40>The length of the song, in minutes and seconds.</#ED8B40>'>Length:</hover></bold></#ED8B40> <#C9702B>"+length+"</#C9702B>")
         );
 
-        // TODO: Write actual queue manager
-        SongPlayer player = new SongPlayer(nbsong.getView(), new NBCallback(nbsong));
-        player.play();
+        // New queue system
+        songPlayer.play();
     }
 }

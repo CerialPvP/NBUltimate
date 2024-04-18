@@ -48,8 +48,6 @@
                   <artifactSet>
                       <excludes>
                           <exclude>net.raphimc:NoteBlockLib</exclude>
-                          <exclude>net.kyori:*</exclude>
-                          <exclude>com.sk89q.worldguard:worldguard-bukkit</exclude>
                           <exclude>com.github.SkriptLang:Skript</exclude>
                       </excludes>
                   </artifactSet>

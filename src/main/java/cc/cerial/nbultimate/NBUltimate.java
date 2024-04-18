@@ -12,14 +12,13 @@ import revxrsal.commands.bukkit.BukkitCommandHandler;
 import revxrsal.commands.exception.CommandErrorException;
 
 import java.util.List;
+import java.util.Objects;
 
 @MavenLibrary(groupId = "net.raphimc", artifactId = "NoteBlockLib", version = "2.0.6")
 @MavenLibrary(groupId = "net.kyori", artifactId = "adventure-api", version = "4.16.0")
 @MavenLibrary(groupId = "net.kyori", artifactId = "adventure-platform-bukkit", version = "4.3.2")
 @MavenLibrary(groupId = "net.kyori", artifactId = "adventure-text-minimessage", version = "4.16.0")
 @MavenLibrary(groupId = "net.kyori", artifactId = "adventure-text-serializer-legacy", version = "4.16.0")
-//@MavenLibrary(groupId = "xyz.xenondevs.invui", artifactId = "invui", version = "1.27", repo = @Repository(url = "https://repo.xenondevs.xyz/releases"))
-@MavenLibrary(groupId = "com.sk89q.worldguard", artifactId = "worldguard-bukkit", version = "7.1.0-SNAPSHOT", repo = @Repository(url = "https://maven.enginehub.org/repo/"))
 @MavenLibrary(groupId = "com.github.SkriptLang", artifactId = "Skript", version = "2.8.4", repo = @Repository(url = "https://repo.skriptlang.org/releases"))
 public final class NBUltimate extends ExtendedJavaPlugin {
 
@@ -47,18 +46,10 @@ public final class NBUltimate extends ExtendedJavaPlugin {
         getConfig().options().copyDefaults(true);
         saveDefaultConfig();
 
-        // Hook into WorldGuard
-        if (
-                getConfig().getBoolean("worldguard") &&
-                getServer().getPluginManager().getPlugin("WorldGuard") != null
-        ) {
-
-        }
-
         BukkitCommandHandler handler = BukkitCommandHandler.create(this);
         // Register a suggestion type which returns all songs in the NBUltimate directory
         handler.getAutoCompleter().registerSuggestion("songs",
-                (args, sender, commands) -> Utils.getAllFiles("plugins/NBUltimate/songs/"));
+                (args, sender, commands) -> Objects.requireNonNull(Utils.getAllFiles("plugins/NBUltimate/songs/")));
 
         handler.setHelpWriter((command, actor) -> MiniMessage.miniMessage().deserialize("<gray>- <#ed8b40>/"+command.getPath().toRealString()+" "+command.getUsage()+" <white>| <yellow>"+command.getDescription()));
 

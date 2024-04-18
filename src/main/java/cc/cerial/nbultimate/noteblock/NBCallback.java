@@ -13,21 +13,28 @@ import net.raphimc.noteblocklib.model.Song;
 import net.raphimc.noteblocklib.player.ISongPlayerCallback;
 import net.raphimc.noteblocklib.util.Instrument;
 import net.raphimc.noteblocklib.util.MinecraftDefinitions;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
+import java.util.Set;
 
 public class NBCallback implements ISongPlayerCallback {
     private final Song<?,?,?> song;
+    private short nps = 0;
+    private short prevNps = 0;
+    private BukkitTask npsTimer;
+    private Set<Player> players;
 
     public NBCallback(Song<?,?,?> song) {
         this.song = song;
     }
 
+    @SuppressWarnings("deprecation")
     @Nullable
     private String getNoteInstrument(Note note) {
         // Get the note instrument ID.
@@ -39,17 +46,15 @@ public class NBCallback implements ISongPlayerCallback {
             return Objects.requireNonNull(org.bukkit.Instrument.getByType(ins.mcId()).getSound()).toString().replaceAll("_", ".").replaceAll("NOTE.BLOCK", "NOTE_BLOCK").toLowerCase();
         } else {
             // Custom instruments should be only available on the NBS Song class.
-            if (!(song instanceof NbsSong)) {
+            if (!(song instanceof NbsSong nbssong)) {
                 return null;
             }
 
-            NbsSong nbssong = (NbsSong) song;
             int customID = id-nbssong.getHeader().getVanillaInstrumentCount();
             String[] splitInstrument = nbssong.getData().getCustomInstruments().get(customID).getSoundFileName().split("/");
-            return splitInstrument[splitInstrument.length-1].replaceAll("\\.", "_").replaceAll("\\.ogg", "").toUpperCase();
+            return splitInstrument[splitInstrument.length-1].replace(".", "_").replace("_ogg", "").toUpperCase();
         }
     }
-
     private Location getLocationOfDir(double offset, double div, Location loc) {
         Vector vec = loc.getDirection();
         vec.setY(0).normalize();
@@ -58,25 +63,52 @@ public class NBCallback implements ISongPlayerCallback {
         return loc.add(vec);
     }
 
-    @Override
-    public void playNote(Note note) {
-        // This method makes it so the instrument still sounds good in the 2 octave range.
-        MinecraftDefinitions.instrumentShiftNote(note);
-        // Sometimes, that method fails, so we need to correct the note.
-        if (
-                note.getKey() < 33 ||
-                note.getKey() > 57
-        ) {
-            MinecraftDefinitions.transposeNoteKey(note);
-        }
+    private Set<Player> getPlayers() {
+        return this.players;
+    }
 
-        String instrument = getNoteInstrument(note);
-        if (instrument == null) return;
+    public void setPlayers(Set<Player> players) {
+        this.players = players;
+    }
+
+    public BukkitTask getNpsTimer() {
+        if (this.npsTimer != null) return this.npsTimer;
+
+        // Create NPS Timer if it doesn't exist.
+        this.npsTimer = new BukkitRunnable() {
+            private byte tick;
+
+            @Override
+            public void run() {
+                if (tick == 20) {
+                    prevNps = nps;
+                    nps = 0;
+                    tick = 0;
+                }
+
+                tick++;
+            }
+        }.runTaskTimer(NBUltimate.getInstance(), 0L, 1L);
+        return this.npsTimer;
+    }
+
+    public short getNps() {
+        return prevNps;
+    }
+
+    @Override
+    public final void playNote(Note note) {
         if (note instanceof NbsNote nbsNote) {
             int pitch = NbsDefinitions.getPitch(nbsNote);
             nbsNote.setKey((byte) NbsDefinitions.getKey(nbsNote));
             nbsNote.setPitch((short) (pitch % NbsDefinitions.PITCHES_PER_KEY));
         }
+
+        // This method makes it so the instrument still sounds good in the 2 octave range.
+        MinecraftDefinitions.instrumentShiftNote(note);
+
+        String instrument = getNoteInstrument(note);
+        if (instrument == null) return;
 
         // Calculate pitch
         float pitch;
@@ -109,16 +141,21 @@ public class NBCallback implements ISongPlayerCallback {
                             "<gray>•</gray> <#ED8B40><bold>Panning:</bold></#ED8B40> <#C9702B>"+panning+"</#C9702B>")
             );
 
-        for (Player player: Bukkit.getOnlinePlayers()) {
-            double div;
-            if (panning < 0f) {
-                div = -1;
-            } else {
-                div = 1;
-            }
+        try {
+            for (Player player: getPlayers()) {
+                double div;
+                if (panning < 0f) {
+                    div = -1;
+                } else {
+                    div = 1;
+                }
 
-            Location loc = getLocationOfDir(panning, div, player.getLocation());
-            player.playSound(loc, instrument, volume, pitch);
+                Location loc = getLocationOfDir(panning, div, player.getLocation());
+                player.playSound(loc, instrument, volume, pitch);
+                nps++;
+            }
+        } catch (Throwable t) {
+            t.printStackTrace();
         }
     }
 }
