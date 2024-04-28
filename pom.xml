@@ -49,6 +49,9 @@
                       <excludes>
                           <exclude>net.raphimc:NoteBlockLib</exclude>
                           <exclude>com.github.SkriptLang:Skript</exclude>
+                          <exclude>org.reflections:reflections</exclude>
+                          <exclude>de.exlll:configlib-core</exclude>
+                          <exclude>de.exlll:configlib-paper</exclude>
                       </excludes>
                   </artifactSet>
               </configuration>
@@ -86,12 +89,22 @@
           <name>Skript Repository</name>
           <url>https://repo.skriptlang.org/releases</url>
       </repository>
+      <repository>
+          <id>xenondevs</id>
+          <url>https://repo.xenondevs.xyz/releases</url>
+      </repository>
   </repositories>
 
   <dependencies>
-      <dependency>
+      <!--<dependency>
           <groupId>org.spigotmc</groupId>
           <artifactId>spigot-api</artifactId>
+          <version>1.20.4-R0.1-SNAPSHOT</version>
+          <scope>provided</scope>
+      </dependency>-->
+      <dependency>
+          <groupId>io.papermc.paper</groupId>
+          <artifactId>paper-api</artifactId>
           <version>1.20.4-R0.1-SNAPSHOT</version>
           <scope>provided</scope>
       </dependency>
@@ -127,7 +140,7 @@
       </dependency>
       <dependency>
           <groupId>net.kyori</groupId>
-          <artifactId>adventure-text-serializer-legacy</artifactId>
+          <artifactId>adventure-text-serializer-gson</artifactId>
           <version>4.16.0</version>
       </dependency>
       <dependency>
@@ -146,6 +159,32 @@
           <artifactId>Skript</artifactId>
           <version>2.8.4</version>
           <scope>provided</scope>
+      </dependency>
+      <dependency>
+          <groupId>xyz.xenondevs.invui</groupId>
+          <artifactId>invui</artifactId>
+          <version>1.27</version>
+          <type>pom</type>
+      </dependency>
+      <dependency>
+          <groupId>xyz.xenondevs.invui</groupId>
+          <artifactId>inventory-access-r18</artifactId>
+          <version>1.27</version>
+      </dependency>
+      <dependency>
+          <groupId>org.reflections</groupId>
+          <artifactId>reflections</artifactId>
+          <version>0.10.2</version>
+      </dependency>
+      <dependency>
+          <groupId>de.exlll</groupId>
+          <artifactId>configlib-core</artifactId>
+          <version>4.5.0</version>
+      </dependency>
+      <dependency>
+          <groupId>de.exlll</groupId>
+          <artifactId>configlib-paper</artifactId>
+          <version>4.5.0</version>
       </dependency>
   </dependencies>
 </project>

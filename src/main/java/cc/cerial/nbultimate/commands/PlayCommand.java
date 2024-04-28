@@ -3,6 +3,7 @@ package cc.cerial.nbultimate.commands;
 import cc.cerial.nbultimate.NBSong;
 import cc.cerial.nbultimate.NBUltimate;
 import cc.cerial.nbultimate.Utils;
+import cc.cerial.nbultimate.noteblock.BaseSongPlayer;
 import cc.cerial.nbultimate.noteblock.GlobalSongPlayer;
 import cc.cerial.nbultimate.noteblock.NBCallback;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -11,12 +12,12 @@ import net.raphimc.noteblocklib.format.midi.MidiSong;
 import net.raphimc.noteblocklib.format.nbs.NbsSong;
 import net.raphimc.noteblocklib.model.Song;
 import net.raphimc.noteblocklib.model.SongView;
-import net.raphimc.noteblocklib.player.SongPlayer;
 import net.raphimc.noteblocklib.util.SongResampler;
 import net.raphimc.noteblocklib.util.SongUtil;
 import revxrsal.commands.annotation.AutoComplete;
 import revxrsal.commands.annotation.Command;
 import revxrsal.commands.annotation.Description;
+import revxrsal.commands.annotation.Switch;
 import revxrsal.commands.bukkit.BukkitCommandActor;
 import revxrsal.commands.bukkit.annotation.CommandPermission;
 
@@ -30,7 +31,8 @@ public class PlayCommand {
     @AutoComplete("@songs *")
     public void play(
             BukkitCommandActor actor,
-            @NBSong String song
+            @NBSong String song,
+            @Switch("no-progressbar") boolean noProgress
     ) {
         // Add "plugins/NBUltimate/songs" if there isn't and make a file instance.
         if (!song.contains("plugins/NBUltimate/songs/")) {
@@ -42,7 +44,11 @@ public class PlayCommand {
         try {
             nbsong = NoteBlockLib.readSong(file);
         } catch (Exception e) {
-            Utils.sendMessage(actor.getSender(), "&cAn error has occurred while reading the song &n"+song+"&c.");
+            actor.audience().sendMessage(
+                    MiniMessage.miniMessage().deserialize("<gradient:#8a4007:#ed8b40><bold>NBUltimate</bold></gradient> <dark_gray>></dark_gray> "+
+                            "<red>Couldn't load song"+file.getName()+". Is the song format valid? If you have admin access, check console.</red>")
+            );
+            e.printStackTrace();
             return;
         }
 
@@ -60,7 +66,7 @@ public class PlayCommand {
         int oglength = view.getLength();
         String length = Utils.calcTime(oglength / speed);
 
-        SongPlayer songPlayer;
+        BaseSongPlayer songPlayer;
         if (nbsong instanceof NbsSong nbsSong) {
             SongResampler.applyNbsTempoChangers(nbsSong);
             author = Utils.replaceIfBlank(nbsSong.getHeader().getAuthor(), "Unknown Author");
@@ -74,6 +80,20 @@ public class PlayCommand {
         } else {
             songPlayer = new GlobalSongPlayer(nbsong, new NBCallback(nbsong));
         }
+        songPlayer.setShowProgress(!noProgress);
+
+        // New queue system
+        try {
+            songPlayer.play();
+        } catch (IllegalStateException ex) {
+            actor.audience().sendMessage(
+                    MiniMessage.miniMessage().deserialize(
+                            "<gradient:#8a4007:#ed8b40><bold>NBUltimate</bold></gradient> <dark_gray>></dark_gray> "+
+                                  "<red>There is already a song on the global song player playing.</red>"
+                    )
+            );
+            return;
+        }
 
         NBUltimate.getAdventure().all().sendMessage(
                 MiniMessage.miniMessage().deserialize("<gradient:#8a4007:#ed8b40><bold>NBUltimate</bold></gradient> <dark_gray>></dark_gray> <gold>Currently playing:</gold>\n" +
@@ -84,8 +104,5 @@ public class PlayCommand {
                         "<gray>•</gray> <#ED8B40><bold><hover:show_text:'<#ED8B40>The speed of the song, measured in Ticks Per Second and Beats Per Minute.</#ED8B40>'>Speed:</hover></bold></#ED8B40> <#C9702B>"+speed+" TPS / "+bpmspeed+" BPM</#C9702B>\n" +
                         "<gray>•</gray> <#ED8B40><bold><hover:show_text:'<#ED8B40>The length of the song, in minutes and seconds.</#ED8B40>'>Length:</hover></bold></#ED8B40> <#C9702B>"+length+"</#C9702B>")
         );
-
-        // New queue system
-        songPlayer.play();
     }
 }

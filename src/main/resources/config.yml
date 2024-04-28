@@ -16,11 +16,3 @@
 # - Keep in mind this will spam your chat, so this should only be enabled for debugging.
 # Type: boolean
 note-debug: false
-
-# WorldGuard Support
-# - If this is enabled, when the plugin loads, it attempts to hook into WorldGuard.
-# - This should be enabled if:
-#    1) You have WorldGuard installed on your server;
-#    2) You want to use the regional music player.
-# Type: boolean
-worldguard: true

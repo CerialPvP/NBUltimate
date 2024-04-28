@@ -52,15 +52,18 @@ public class NBCallback implements ISongPlayerCallback {
 
             int customID = id-nbssong.getHeader().getVanillaInstrumentCount();
             String[] splitInstrument = nbssong.getData().getCustomInstruments().get(customID).getSoundFileName().split("/");
-            return splitInstrument[splitInstrument.length-1].replace(".", "_").replace("_ogg", "").toUpperCase();
+            return splitInstrument[splitInstrument.length-1].replace(".ogg", "");
         }
     }
-    private Location getLocationOfDir(double offset, double div, Location loc) {
-        Vector vec = loc.getDirection();
-        vec.setY(0).normalize();
-        vec.rotateAroundY(Math.PI / div);
-        vec.multiply(offset);
-        return loc.add(vec);
+    private Location getLocationOfDir(Location location, boolean right, float distance) {
+        Vector direction = location.getDirection();
+
+        // Modify direction vector based on right side
+        direction = right ? direction.clone().add(new Vector(0, 0, distance)) : direction.clone().add(new Vector(0, 0, -distance));
+
+        // Add the scaled vector to player location
+        return location.add(direction);
+
     }
 
     private Set<Player> getPlayers() {
@@ -127,12 +130,12 @@ public class NBCallback implements ISongPlayerCallback {
 
         float panning;
         if (note instanceof NoteWithPanning noteWithPanning) {
-            panning = (float) (noteWithPanning.getPanning()*0.04);
+            panning = (float) (noteWithPanning.getPanning()*0.055);
         } else {
             panning = 0f;
         }
 
-        if (NBUltimate.getInstance().getConfig().getBoolean("note-debug"))
+        if (NBUltimate.getMainConfig().getNoteDebug())
             NBUltimate.getAdventure().all().sendMessage(
                     MiniMessage.miniMessage().deserialize("<gradient:#8a4007:#ed8b40><bold>NBUltimate</bold></gradient> <dark_gray>></dark_gray> <red>Note Debugging:</red>\n" +
                             "<gray>•</gray> <#ED8B40><bold>Sound:</bold></#ED8B40> <#C9702B>"+instrument+"</#C9702B>\n" +
@@ -143,14 +146,7 @@ public class NBCallback implements ISongPlayerCallback {
 
         try {
             for (Player player: getPlayers()) {
-                double div;
-                if (panning < 0f) {
-                    div = -1;
-                } else {
-                    div = 1;
-                }
-
-                Location loc = getLocationOfDir(panning, div, player.getLocation());
+                Location loc = getLocationOfDir(player.getLocation(), (panning > 0), panning);
                 player.playSound(loc, instrument, volume, pitch);
                 nps++;
             }

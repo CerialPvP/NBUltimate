@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.util.List;
 import java.util.Set;
 
 public class BaseSongPlayer extends SongPlayer {
@@ -59,12 +60,26 @@ public class BaseSongPlayer extends SongPlayer {
 
         if (this.showProgress) {
             this.progBarTask = new BukkitRunnable() {
-                private long timePlayed = -1L;
+                private final List<String> scrollingText = Utils.scrollingText(getSongView().getTitle(), 20);
+                private int index = -1;
+                private int scrollIndex = 0;
 
                 @Override
                 public void run() {
-                    this.timePlayed++;
-                    String time = Utils.calcTime(timePlayed);
+                    index++;
+                    if (index == 4) {
+                        index = 0;
+                        if (scrollIndex > scrollingText.size()) scrollIndex = 0; else scrollIndex++;
+                    }
+                    String loopName;
+                    try {
+                        loopName = scrollingText.get(scrollIndex);
+                    } catch (IndexOutOfBoundsException e) {
+                        loopName = scrollingText.get(0);
+                        scrollIndex = 0;
+                    }
+                    double ogTime = getTick()/getSongView().getSpeed();
+                    String time = Utils.calcTime(ogTime);
                     String totalTime = Utils.calcTime((getSongView().getLength()/ getSongView().getSpeed()));
                     String status;
                     if (!isPaused()) status = "<green>⏵</green>"; else status = "<yellow>⏸</yellow>";
@@ -76,13 +91,13 @@ public class BaseSongPlayer extends SongPlayer {
                                         MiniMessage.miniMessage().deserialize(
                                                 "<gradient:#8a4007:#ed8b40><bold>NBUltimate</bold></gradient> <dark_gray>></dark_gray> " +
                                                       status + " <#ed8b40>"+time+"</#ed8b40><#8a4007>/</#8a4007><#ed8b40>"+totalTime+"</#ed8b40> " +
-                                                      "<#8a4007>|</#8a4007> <#ed8b40>"+getSongView().getTitle()+"</#ed8b40> "+
+                                                      "<#8a4007>|</#8a4007> <#ed8b40>"+loopName+"</#ed8b40> "+
                                                       "<#8a4007>|</#8a4007> <#ed8b40>"+callback.getNps()+" NPS</#ed8b40>"
                                         )
                                 );
                     }
                 }
-            }.runTaskTimer(NBUltimate.getInstance(), 0L, 20L);
+            }.runTaskTimerAsynchronously(NBUltimate.getInstance(), 0L, 2L);
         }
     }
 

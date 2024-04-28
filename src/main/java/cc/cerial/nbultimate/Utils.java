@@ -1,12 +1,7 @@
 package cc.cerial.nbultimate;
 
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
-import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.ApiStatus;
 
 import javax.annotation.Nullable;
@@ -20,29 +15,6 @@ import java.util.regex.Pattern;
 public class Utils {
     public static Component getPrefix() {
         return MiniMessage.miniMessage().deserialize("<gradient:#8a4007:#ed8b40><bold>NBUltimate</bold></gradient>");
-    }
-
-    public static void sendMessage(CommandSender sender, String message) {
-        Component comp = getPrefix()
-                .append(Component.text(" > ", NamedTextColor.DARK_GRAY))
-                .append(LegacyComponentSerializer.legacyAmpersand().deserialize(message)); // Serialize the response message
-        if (sender instanceof Player player) {
-            NBUltimate.getAdventure().player(player).sendMessage(comp);
-        } else {
-            NBUltimate.getAdventure().console().sendMessage(comp);
-        }
-    }
-
-    public static void sendToOps(String message) {
-        Component comp = getPrefix()
-                .append(Component.text(" > ", NamedTextColor.DARK_GRAY))
-                .append(LegacyComponentSerializer.legacyAmpersand().deserialize(message)); // Serialize the response message
-
-        NBUltimate.getAdventure().console().sendMessage(comp);
-        for (Player player: Bukkit.getOnlinePlayers()) {
-            if (!player.hasPermission("nbultimate.admin")) continue;
-            NBUltimate.getAdventure().player(player).sendMessage(comp);
-        }
     }
 
     @Nullable
@@ -61,10 +33,11 @@ public class Utils {
             } else {
                 String path = loopfile.getPath();
                 boolean isMatching = Pattern
-                        .compile("\\.(nbs|mcsp2|mid|txt|notebot)", Pattern.CASE_INSENSITIVE)
+                        .compile("\\.(nbs|mcsp2|mcsp|mid|midi|txt|notebot)", Pattern.CASE_INSENSITIVE)
                         .matcher(path)
                         .find();
                 if (!isMatching) continue;
+                if (!loopfile.renameTo(new File(loopfile.getParentFile(), loopfile.getName().replace(' ', '_')))) continue;
                 files.add(loopfile.getPath().replace("plugins/NBUltimate/songs/", ""));
             }
         }
@@ -103,5 +76,19 @@ public class Utils {
             return max;
         }
         return value;
+    }
+
+    public static List<String> scrollingText(String text, int cutoff) {
+        text = text + "     ";
+        List<String> scrollList = new ArrayList<>();
+        for (int i = 0; i < text.length(); i++) {
+            String scrolledText = text.substring(i) + text.substring(0, i);
+            if (scrolledText.length() <= cutoff) {
+                scrollList.add(scrolledText);
+            } else {
+                scrollList.add(scrolledText.substring(0, cutoff));
+            }
+        }
+        return scrollList;
     }
 }
