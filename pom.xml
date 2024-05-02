@@ -37,9 +37,9 @@
             <goals>
               <goal>shade</goal>
             </goals>
-              <configuration>
+            <configuration>
+                  <outputFile>jars/${project.artifactId}-${project.version}.jar</outputFile>
                   <minimizeJar>true</minimizeJar>
-                  <outputFile>${dir}/${project.artifactId}-${project.version}.jar</outputFile>
                   <relocations>
                       <relocation>
                           <pattern>me.lucko.helper</pattern>
@@ -55,7 +55,7 @@
                           <exclude>de.exlll:configlib-paper</exclude>
                       </excludes>
                   </artifactSet>
-              </configuration>
+            </configuration>
           </execution>
         </executions>
       </plugin>
