@@ -1,3 +1,6 @@
+# :warning: ATTENTION! Starting from September 5th 2024, I have decided to make NBUltimate a multi-platform plugin. For more information, visit the "multiplatform" branch on this repo. This version of the plugin is no longer supported.
+---
+
 # NBUltimate
 *The ultimate NBS player and manipulator plugin.*
 
