@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="cb269764-eb22-4856-b733-f4c728939a9b" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/gradle.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/uiDesigner.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/build.gradle.kts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.jar" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gradle/wrapper/gradle-wrapper.properties" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gradlew" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/gradlew.bat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/settings.gradle.kts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/CommandBootstrap.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/LibraryLoader.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/NBUltimate.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/commands/PlayCommand.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/commands/TestCommand.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/managers/PluginConfig.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/managers/SongCacheManager.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/managers/SongPlayerStorageManager.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/managers/commands/AbstractCommand.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/managers/commands/CommandList.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/managers/commands/FlagSwitchArgument.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/managers/commands/SongArgument.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/noteblocklib/NBCallback.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/noteblocklib/NBPlaylist.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/noteblocklib/NBSongPlayer.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/noteblocklib/ProgressTask.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/utils/CommandUtils.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/utils/MathUtils.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/utils/OS.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/utils/SongFileUtils.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/utils/Utils.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/utils/Version.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/utils/exceptions/InvalidConfigException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/utils/exceptions/MissingValuesException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/cc/cerial/nbultimate/utils/exceptions/SongPlayerNotSetException.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/README.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/songs/Debugging Songs/Panning_Debug.nbs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/songs/Debugging Songs/Volume_Debug.nbs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/songs/Demo Songs/All Night Long.mid" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/songs/Demo Songs/Boss Battle 3o.nbs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/songs/Demo Songs/Brass Blocks.nbs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/songs/Demo Songs/Deal 'Em Out - Undertale Yellow.nbs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/songs/Demo Songs/Deltarune - My Castle Town.nbs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/songs/Demo Songs/Escaping the Supernova.nbs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/songs/Demo Songs/Stardrop Saloon - Stardew Vally.nbs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/songs/Demo Songs/Take 5 - by Paul Desmond.mid" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/songs/Demo Songs/The Christmas Song.mid" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/songs/Demo Songs/To Make the End of Battle.mid" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/songs/Demo Songs/earthday.mid" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/songs/Demo Songs/majicalljarr.mid" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/songs/Demo Songs/megalovania_-_super_smash_bros._ultimate.nbs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/songs/Demo Songs/the_ground's_colour_is_yellow.nbs" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExternalProjectsData">
+    <projectState path="$PROJECT_DIR$">
+      <ProjectState />
+    </projectState>
+  </component>
+  <component name="ExternalProjectsManager">
+    <system id="GRADLE">
+      <state>
+        <task path="$PROJECT_DIR$">
+          <activation />
+        </task>
+        <projects_view>
+          <tree_state>
+            <expand>
+              <path>
+                <item name="" type="6a2764b6:ExternalProjectsStructure$RootNode" />
+                <item name="NBUltimate" type="f1a62948:ProjectNode" />
+              </path>
+            </expand>
+            <select />
+          </tree_state>
+        </projects_view>
+      </state>
+    </system>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="AnnotationType" />
+        <option value="Class" />
+        <option value="Exception" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="KotlinCodeInsightWorkspaceSettings">
+    <option name="optimizeImportsOnTheFly" value="true" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 3
+}</component>
+  <component name="ProjectId" id="2m0zGnATujhYPUwfYBMwvxU2xsh" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_MARK_IGNORED_FILES_AS_EXCLUDED&quot;: &quot;true&quot;,
+    &quot;Gradle.Build Jar File.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Build NBUltimate.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Build nbultimate.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Download Sources.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Publish.executor&quot;: &quot;Run&quot;,
+    &quot;Gradle.Run Testing Server.executor&quot;: &quot;Debug&quot;,
+    &quot;Gradle.nbultimate [clean build].executor&quot;: &quot;Run&quot;,
+    &quot;JAR Application.Testing Server.executor&quot;: &quot;Debug&quot;,
+    &quot;Remote JVM Debug.Unnamed.executor&quot;: &quot;Debug&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/dani/IdeaProjects/nbultimate-v2-attempt&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.3381295&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/main/resources/songs/Demo Songs" />
+      <recent name="$PROJECT_DIR$/src/main/resources/songs/Debugging Songs" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/main/resources/songs/Demo Songs" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Gradle.Run Testing Server">
+    <configuration name="Build Jar File" type="GradleRunConfiguration" factoryName="Gradle">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="clean" />
+            <option value="build" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="Publish" type="GradleRunConfiguration" factoryName="Gradle">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="publish" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration name="Run Testing Server" type="GradleRunConfiguration" factoryName="Gradle">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" value="" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list>
+            <option value="clean" />
+            <option value="build" />
+            <option value="runServer" />
+          </list>
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <ExternalSystemDebugServerProcess>true</ExternalSystemDebugServerProcess>
+      <ExternalSystemReattachDebugProcess>true</ExternalSystemReattachDebugProcess>
+      <DebugAllEnabled>false</DebugAllEnabled>
+      <RunAsTest>false</RunAsTest>
+      <method v="2" />
+    </configuration>
+    <configuration default="true" type="JetRunConfigurationType">
+      <module name="nbultimate" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration default="true" type="KotlinStandaloneScriptRunConfigurationType">
+      <module name="nbultimate" />
+      <option name="filePath" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Gradle.Build Jar File" />
+      <item itemvalue="Gradle.Publish" />
+      <item itemvalue="Gradle.Run Testing Server" />
+    </list>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="cb269764-eb22-4856-b733-f4c728939a9b" name="Changes" comment="" />
+      <created>1726228187893</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1726228187893</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="XDebuggerManager">
+    <pin-to-top-manager>
+      <pinned-members>
+        <PinnedItemInfo parentTag="sun.nio.fs.UnixPath" memberName="stringValue" />
+      </pinned-members>
+    </pin-to-top-manager>
+  </component>
+</project>
