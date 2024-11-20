@@ -268,13 +268,6 @@ public class NBSongPlayer extends SongPlayer {
             this.progressTask = Pair.of(task,
                     Bukkit.getScheduler().runTaskTimer(NBUltimate.get(), task, 0L, 2L));
         }
-
-        if (this.shouldBroadcast) {
-            Song<?,?,?> song = this.playlist.get(0);
-            // View: Title, Length, Speed
-            //
-            ((NbsSong)song).getData().getCustomInstruments().add()
-        }
     }
 
     /**

@@ -11,17 +11,16 @@ The source code for NBUltimate is hosted here.
   - [Running a testing server](#running-a-testing-server)
 ## What is this?
 This is a [PaperMC](https://papermc.io) plugin, that allows you to playback
-and manipulate NBS files, and also playback, manipulate and convert the following
-formats to NBS:
+and manipulate NBS files, and convert the following formats to NBS:
 - .mid ([MIDI](https://en.wikipedia.org/wiki/MIDI) format)
 - .mcsp2 ([Minecraft Song Planner 2](https://web.archive.org/web/20110923175931/http://www.minecraftforum.net/topic/136749-minecraft-song-planner-25-a-tool-for-note-block-musicians/)'s format)
 - .notebot ([Future Client](https://futureclient.net/)'s format)
 - .txt ([BleachHack](https://github.com/BleachDev/BleachHack)'s format)
 ## Downloading the plugin
-> **HUGE WARNING: NBUltimate REQUIRES for you to use a Paper server (or a fork). Spigot will 100% not work, and ignore
+> **:warning: HUGE WARNING: NBUltimate REQUIRES for you to use a Paper server (or a fork). Spigot will 100% not work, and ignore
 the plugin (since this is a Paper plugin), and "hybrid" forks (such as Arclight) aren't guaranteed to work.**
 ### Dev Build
-> **WARNING: A GitHub account is required for accessing Actions.**
+> **:warning: WARNING: A GitHub account is required for accessing Actions.**
 1. Head over to **Actions** tab (as mentioned above, a GitHub account is required.)
 2. Go to latest workflow run.
 3. Download the artifact, and extract the ZIP file.
@@ -34,7 +33,7 @@ the plugin (since this is a Paper plugin), and "hybrid" forks (such as Arclight)
 4. Reboot the server and let the plugin download all its required libraries.
 ## For developers
 ### Importing NBUltimate to your build tool
-> **WARNING: If you are using a shading plugin, ADD NBULTIMATE TO YOUR SHADING EXCLUSIONS LIST.**
+> **:warning: WARNING: If you are using a shading plugin, ADD NBULTIMATE TO YOUR SHADING EXCLUSIONS LIST.**
 
 To add NBUltimate in Maven:
 ```xml
@@ -79,7 +78,7 @@ dependencies {
 }
 ```
 ### Adding NBUltimate as a dependency in your plugin
-> **WARNING: If you declare NBUltimate as a soft-dependency (your plugin won't require NBUltimate to start up), make sure
+> :warning:  **WARNING: If you declare NBUltimate as a soft-dependency (your plugin won't require NBUltimate to start up), make sure
 to add a field in your plugin to signal that NBUltimate is present and enabled, like this:**
 ```java
 public class YourPlugin extends JavaPlugin {
@@ -127,7 +126,7 @@ On Mac/Linux:
 ./gradlew clean build
 ```
 ### Running a testing server
-> **WARNING: When running the server, you automatically agree to the Mojang EULA. The server is only to be used with NBUltimate, and not with other plugins.**
+> **:warning: WARNING: When running the server, you automatically agree to the Mojang EULA. The server is only to be used with NBUltimate, and not with other plugins.**
 
 NBUltimate also offers the option of running a dedicated test server from your IDE.
 Simply run the `runServer``<br>
