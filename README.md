@@ -6,7 +6,6 @@ The source code for NBUltimate is hosted here.
 - [For developers](#for-developers)
   - [Importing NBUltimate to your build tool](#importing-nbultimate-to-your-build-tool)
   - [Adding NBUltimate as a dependency in your plugin](#adding-nbultimate-as-a-dependency-in-your-plugin)
-  - [Retrieving an instance of NBUltimate](#retrieving-an-instance-of-nbultimate)
   - [Building NBUltimate](#building-nbultimate)
   - [Running a testing server](#running-a-testing-server)
 ## What is this?
@@ -129,7 +128,7 @@ On Mac/Linux:
 > **:warning: WARNING: When running the server, you automatically agree to the Mojang EULA. The server is only to be used with NBUltimate, and not with other plugins.**
 
 NBUltimate also offers the option of running a dedicated test server from your IDE.
-Simply run the `runServer``<br>
+The test server also supports being ran with the IntelliJ debugger, if you run it with the [JetBrains Runtime](https://github.com/JetBrains/JetBrainsRuntime) JDK, that supports hot-reloading and enhanced class redefinition. 
 On Windows:
 ```
 gradlew.bat runServer
