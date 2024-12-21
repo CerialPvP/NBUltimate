@@ -1,24 +1,24 @@
 package cc.cerial.nbultimate.commands;
 
+import cc.cerial.nbultimate.managers.CustomArgs;
 import cc.cerial.nbultimate.managers.commands.AbstractCommand;
-import cc.cerial.nbultimate.managers.commands.SongArgument;
 import cc.cerial.nbultimate.noteblocklib.NBPlaylist;
 import cc.cerial.nbultimate.noteblocklib.NBSongPlayer;
-import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.tree.LiteralCommandNode;
-import io.papermc.paper.command.brigadier.CommandSourceStack;
-import io.papermc.paper.command.brigadier.Commands;
+import dev.jorel.commandapi.CommandAPICommand;
+import dev.jorel.commandapi.executors.CommandArguments;
 import net.raphimc.noteblocklib.model.Song;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
+
+import java.util.HashSet;
+import java.util.Objects;
 
 import static cc.cerial.nbultimate.utils.Utils.format;
 
-@SuppressWarnings("UnstableApiUsage")
 public class PlayCommand extends AbstractCommand {
     private static NBSongPlayer songPlayer;
 
-    private static void nukeSongPlayer() {
+    public static void nukeSongPlayer() {
         Bukkit.broadcast(format("nukeSongPlayer ran"));
         songPlayer = null;
     }
@@ -28,42 +28,30 @@ public class PlayCommand extends AbstractCommand {
     }
 
     @Override
-    public LiteralCommandNode<CommandSourceStack> commandData() {
-        return Commands.literal("play")
-                .executes(this::playNoArgs)
-                .then(Commands.argument("song", new SongArgument())
-                        .executes(this::playSongArg)
-                )
-                .build();
+    public CommandAPICommand getCommandData() {
+        return new CommandAPICommand("play")
+                .withArguments(CustomArgs.getSongArg("song"))
+                .executes(this::execute);
     }
 
-    @Override
-    public String description() {
-        return "Plays a song. Using this command with no arguments will open a GUI.";
-    }
+    private void execute(CommandSender sender, CommandArguments args) {
+        Song<?,?,?> song = Objects.requireNonNull((Song<?, ?, ?>) args.get("song"));
 
-    private int playNoArgs(CommandContext<CommandSourceStack> ctx) {
-        ctx.getSource().getSender().sendMessage("Used command with no arguments.");
-        return 0;
-    }
-
-    private int playSongArg(CommandContext<CommandSourceStack> ctx) {
-        Song<?,?,?> song = ctx.getArgument("song", Song.class);
         if (songPlayer == null) {
             songPlayer = new NBSongPlayer.Builder()
-                    .players(Bukkit.getOnlinePlayers().toArray(new Player[0]))
+                    .players(() -> new HashSet<>(Bukkit.getOnlinePlayers()), 20)
                     .playlist(new NBPlaylist(song))
                     .storeSongPlayer(false)
                     .showProgress(true)
                     .shouldBroadcast(true)
+                    .moreOctaves(true)
                     .stopEvent(PlayCommand::nukeSongPlayer)
-                    .name("")
+                    .name("Command Song Player")
                     .build();
             songPlayer.play();
         } else {
             songPlayer.getPlaylist().add(song);
-            ctx.getSource().getSender().sendMessage("Added song "+song.getView().getTitle()+" to queue.");
+            sender.sendMessage("Added song "+song.getView().getTitle()+" to queue.");
         }
-        return 1;
     }
 }

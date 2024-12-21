@@ -1,29 +1,36 @@
 package cc.cerial.nbultimate;
 
+import cc.cerial.nbultimate.guis.buttons.BackItem;
+import cc.cerial.nbultimate.guis.buttons.ForwardItem;
 import cc.cerial.nbultimate.managers.PluginConfig;
 import cc.cerial.nbultimate.managers.SongCacheManager;
 import cc.cerial.nbultimate.managers.SongPlayerStorageManager;
+import cc.cerial.nbultimate.managers.commands.AbstractCommand;
+import cc.cerial.nbultimate.utils.MathUtils;
+import cc.cerial.nbultimate.utils.ResourcePackDownloader;
+import cc.cerial.nbultimate.utils.Utils;
 import cc.cerial.nbultimate.utils.Version;
+import dev.jorel.commandapi.CommandAPI;
+import dev.jorel.commandapi.CommandAPIBukkitConfig;
+import dev.jorel.commandapi.CommandAPICommand;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ScanResult;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.ApiStatus;
 import xyz.xenondevs.invui.InvUI;
+import xyz.xenondevs.invui.gui.structure.Markers;
+import xyz.xenondevs.invui.gui.structure.Structure;
+import xyz.xenondevs.invui.item.ItemWrapper;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Enumeration;
-import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 /**
  * The main plugin class.
@@ -34,6 +41,8 @@ public final class NBUltimate extends JavaPlugin {
     private static PluginConfig pluginConfig;
     private static SongPlayerStorageManager songPlayerStorageManager;
     private static Version mcVersion;
+    private static ResourcePackDownloader packDownloader;
+    private static Structure guiStructure;
 
     /**
      * @return The plugin's instance.
@@ -45,11 +54,24 @@ public final class NBUltimate extends JavaPlugin {
     }
 
     /**
+     * @return The Resource Pack Downloader used for this plugin.
+     * @see ResourcePackDownloader
+     */
+    public static ResourcePackDownloader getPackDownloader() {
+        return packDownloader;
+    }
+
+    /**
      * @return The Song Cache Manager, which is responsible for cached songs.
      * @see SongCacheManager
      */
     public static SongCacheManager getSongCacheManager() {
         return songCacheManager;
+    }
+
+    @ApiStatus.Internal
+    public static Structure getGuiStructure() {
+        return guiStructure;
     }
 
     /**
@@ -65,6 +87,7 @@ public final class NBUltimate extends JavaPlugin {
     }
 
     public static void loadConfig() {
+        if (pluginConfig != null) pluginConfig = null;
         pluginConfig = new PluginConfig();
     }
 
@@ -82,70 +105,7 @@ public final class NBUltimate extends JavaPlugin {
 
     private void makeSongFolder() {
         if (!getDataFolder().mkdirs()) getLogger().severe("Couldn't make NBUltimate folder.");
-        ZipFile f = null;
-        try {
-            f = new ZipFile(this.getFile());
-            Enumeration<? extends ZipEntry> entries = f.entries();
-            while (entries.hasMoreElements()) {
-                ZipEntry entry = entries.nextElement();
-                if (!entry.getName().startsWith("songs/") && !entry.getName().equalsIgnoreCase("README.txt")) continue;
-
-                File saveTo = new File(getDataFolder(), entry.getName());
-
-                if (entry.isDirectory()) {
-                    if (!saveTo.mkdirs()) getLogger().warning("Couldn't make directory "+saveTo+".");
-                    continue;
-                }
-
-                try (InputStream is = f.getInputStream(entry); FileOutputStream fos = new FileOutputStream(saveTo)) {
-                    byte[] buffer = new byte[8192];
-                    int length;
-                    while ((length = is.read(buffer)) != -1) {
-                        fos.write(buffer, 0, length);
-                    }
-                }
-            }
-            getLogger().info("Successfully generated all default songs.");
-        } catch (IOException e) {
-            getLogger().log(Level.SEVERE, "There was an error while generating files:", e);
-        } finally {
-            if (f != null) {
-                try {
-                    f.close();
-                } catch (IOException e) {
-                    getLogger().log(Level.SEVERE, "There was an error when closing the ZipFile:", e);
-                }
-            }
-
-        }
-    }
-
-    public void registerCommands() {
-//        if (imperat != null) {
-//            imperat.unregisterAllCommands();
-//        } else {
-//            imperat = BukkitImperat.builder(this)
-//                    .build();
-//            imperat.applyBrigadier();
-//        }
-//
-//        // Use ClassGraph to get all classes in commands package which implement OrphanCommand
-//        try (ScanResult scanResult = new ClassGraph()
-//                .enableAllInfo()
-//                .addClassLoader(getClassLoader())
-//                .acceptPackages("cc.cerial.nbultimate.commands")
-//                .scan()) {
-//            for (ClassInfo info: scanResult.getClassesWithAnnotation(Command.class)) {
-//                try {
-//                    Class<?> clazz = info.loadClass();
-//                    imperat.registerCommand(clazz.getDeclaredConstructor().newInstance());
-//                    commandRegistered(clazz);
-//                } catch (InvocationTargetException | InstantiationException |
-//                         IllegalAccessException | NoSuchMethodException e) {
-//                    throw new RuntimeException(e);
-//                }
-//            }
-//        }
+        Utils.unzip(this.getFile());
     }
 
     public void registerEvents() {
@@ -171,9 +131,56 @@ public final class NBUltimate extends JavaPlugin {
         }
     }
 
+    public void registerCommandAPI(boolean reload) {
+        // If reloading, we unload the /nb command and CommandAPI.
+        if (reload) {
+            CommandAPI.unregister("nb");
+            CommandAPI.onDisable();
+        }
+
+        CommandAPIBukkitConfig config = new CommandAPIBukkitConfig(this)
+                .verboseOutput(true)
+                .usePluginNamespace()
+                .shouldHookPaperReload(true);
+        CommandAPI.onLoad(config);
+
+        CommandAPICommand root = new CommandAPICommand("nb")
+                .withAliases("noteblock")
+                .withFullDescription("Root command for NBUltimate.");
+
+        getLogger().info("Regisering commands...");
+        try (ScanResult scanResult = new ClassGraph()
+                .enableAllInfo()
+                .addClassLoader(this.getClassLoader())
+                .acceptPackages("cc.cerial.nbultimate.commands")
+                .scan()) {
+            for (ClassInfo info: scanResult.getAllClasses()) {
+                try {
+                    AbstractCommand command = (AbstractCommand) info.loadClass().getConstructor().newInstance();
+                    root.withSubcommand(command.getCommandData());
+                    getLogger().info("Registered subcommand "+command.getCommandData().getName()+" from class "+info.getSimpleName());
+                } catch (InvocationTargetException | InstantiationException |
+                         IllegalAccessException | NoSuchMethodException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+
+        root.register();
+        if (reload) {
+            CommandAPI.onEnable();
+        }
+    }
+
+    @Override
+    public void onLoad() {
+        registerCommandAPI(false);
+    }
+
     @SuppressWarnings({"UnstableApiUsage"})
     @Override
     public void onEnable() {
+        CommandAPI.onEnable();
         instance = this;
         songPlayerStorageManager = new SongPlayerStorageManager();
         updateMCVersion();
@@ -186,19 +193,43 @@ public final class NBUltimate extends JavaPlugin {
             getLogger().warning("- GitHub: https://github.com/CerialPvP/NBUltimate -> Issues");
         }
 
-        if (mcVersion.isSmallerThan(new Version(1, 20))) {
-            getLogger().warning("You are running a server with version below 1.20.");
-            getLogger().warning("NBUltimate does not support servers below 1.20, therefore you are on your own.");
+        if (mcVersion.isSmallerThan(new Version(1, 20, 5))) {
+            getLogger().warning("You are running a server with version below 1.20.5.");
+            getLogger().warning("NBUltimate does not support servers below 1.20.5, therefore you are on your own.");
         }
 
-        InvUI.getInstance().setPlugin(this);
-        getLogger().info("Enabled InvUI framework.");
 
         getLogger().info("Versions:");
+        getLogger().info("- Minecraft Server Version: "+mcVersion);
         getLogger().info("- NoteBlockLib Version: "+LibraryLoader.NOTEBLOCKLIB.getArtifact().getVersion());
         getLogger().info("- SimpleYaml Version: "+LibraryLoader.SIMPLE_YAML.getArtifact().getVersion());
         getLogger().info("- ClassGraph Version: "+LibraryLoader.CLASSGRAPH.getArtifact().getVersion());
-        getLogger().info("- InvUI Version: "+LibraryLoader.INVUI.getArtifact().getVersion());
+
+        InvUI.getInstance().setPlugin(this);
+        // GLASS PANES (capital letters)
+        Structure.addGlobalIngredient('A', new ItemWrapper(Utils.hideTooltip(new ItemStack(Material.RED_STAINED_GLASS_PANE))));
+        Structure.addGlobalIngredient('B', new ItemWrapper(Utils.hideTooltip(new ItemStack(Material.ORANGE_STAINED_GLASS_PANE))));
+        Structure.addGlobalIngredient('C', new ItemWrapper(Utils.hideTooltip(new ItemStack(Material.YELLOW_STAINED_GLASS_PANE))));
+        Structure.addGlobalIngredient('D', new ItemWrapper(Utils.hideTooltip(new ItemStack(Material.BROWN_STAINED_GLASS_PANE))));
+        // Regular glass (lower case letters)
+        Structure.addGlobalIngredient('a', new ItemWrapper(Utils.hideTooltip(new ItemStack(Material.RED_STAINED_GLASS))));
+        Structure.addGlobalIngredient('b', new ItemWrapper(Utils.hideTooltip(new ItemStack(Material.ORANGE_STAINED_GLASS))));
+        Structure.addGlobalIngredient('c', new ItemWrapper(Utils.hideTooltip(new ItemStack(Material.YELLOW_STAINED_GLASS))));
+        Structure.addGlobalIngredient('d', new ItemWrapper(Utils.hideTooltip(new ItemStack(Material.BROWN_STAINED_GLASS))));
+        // Pagination
+        Structure.addGlobalIngredient('#', Markers.CONTENT_LIST_SLOT_HORIZONTAL);
+        Structure.addGlobalIngredient('<', BackItem::new);
+        Structure.addGlobalIngredient('>', ForwardItem::new);
+
+        guiStructure = new Structure(
+                "a A B C D A B C b",
+                "A # # # # # # # A",
+                "B # # # # # # # B",
+                "C # # # # # # # C",
+                "D # # # # # # # D",
+                "c A B < D > B C d"
+        );
+        getLogger().info("Enabled InvUI framework.");
 
         if (!getDataFolder().exists()) {
             getLogger().info("Adding demo songs...");
@@ -207,6 +238,17 @@ public final class NBUltimate extends JavaPlugin {
 
         getLogger().info("Loading configuration...");
         loadConfig();
+
+//        getLogger().info("Downloading resource packs...");
+//        packDownloader = new ResourcePackDownloader.Builder()
+//                .minecraftPack(mcVersion)
+//                .customAssets(pluginConfig.getCustomPacks().values().stream().map(Object::toString).toList())
+//                .build();
+//
+//        packDownloader.download();
+
+        getLogger().info("Precalculating sin/cos values...");
+        MathUtils.precalculateSinCos();
 
         getLogger().info("Loading all songs, you might experience lag...");
         songCacheManager.cacheAllSongs();
@@ -219,6 +261,7 @@ public final class NBUltimate extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        CommandAPI.onDisable();
         getLogger().info("Plugin disabling. Goodbye!");
         pluginConfig = null;
         instance = null;

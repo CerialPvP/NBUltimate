@@ -1,6 +1,7 @@
 # NBUltimate
 Hello, and thank you for visiting the NBUltimate GitHub repository.<br>
 The source code for NBUltimate is hosted here.
+- [For the player base](#for-the-player-base)
 - [What is this?](#what-is-this)
 - [Downloading the plugin](#downloading-the-plugin)
 - [For developers](#for-developers)
@@ -8,9 +9,14 @@ The source code for NBUltimate is hosted here.
   - [Adding NBUltimate as a dependency in your plugin](#adding-nbultimate-as-a-dependency-in-your-plugin)
   - [Building NBUltimate](#building-nbultimate)
   - [Running a testing server](#running-a-testing-server)
+## For the player base
+If a server you're playing on plays heavy songs and if you see that in the F3 menu you're hitting the 247 sound
+limit, you should use the [Raise Sound Limit Simplified](https://modrinth.com/mod/rsls) mod that increases the
+sound limit from 247 sounds to 4087, which should give you enhanced sound quality.
 ## What is this?
 This is a [PaperMC](https://papermc.io) plugin, that allows you to playback
-and manipulate NBS files, and convert the following formats to NBS:
+and manipulate the following formats:
+- .nbs ([OpenNBS](https://opennbs.org) and [Legacy NBS](https://stuffbydavid.com/mcnbs) format. This is the primary format, which means all other formats convert to this.)
 - .mid ([MIDI](https://en.wikipedia.org/wiki/MIDI) format)
 - .mcsp2 ([Minecraft Song Planner 2](https://web.archive.org/web/20110923175931/http://www.minecraftforum.net/topic/136749-minecraft-song-planner-25-a-tool-for-note-block-musicians/)'s format)
 - .notebot ([Future Client](https://futureclient.net/)'s format)
@@ -88,7 +94,8 @@ public class YourPlugin extends JavaPlugin {
     public void onEnable() {
         // Plugin startup logic here...
         PluginManager pm = getServer().getPluginManager();
-        if (pm.isPluginEnabled(pm.getPlugin("NBUltimate"))) this.isNBUltimateEnabled = true;
+        if (pm.isPluginEnabled(pm.getPlugin("NBUltimate"))) 
+            this.isNBUltimateEnabled = true;
     }
 }
 ```
@@ -128,7 +135,7 @@ On Mac/Linux:
 > **:warning: WARNING: When running the server, you automatically agree to the Mojang EULA. The server is only to be used with NBUltimate, and not with other plugins.**
 
 NBUltimate also offers the option of running a dedicated test server from your IDE.
-The test server also supports being ran with the IntelliJ debugger, if you run it with the [JetBrains Runtime](https://github.com/JetBrains/JetBrainsRuntime) JDK, that supports hot-reloading and enhanced class redefinition. 
+The test server also supports being ran with the IntelliJ debugger, if you run it with the [JetBrains Runtime](https://github.com/JetBrains/JetBrainsRuntime) JDK, that supports hot-reloading and enhanced class redefinition.<br>
 On Windows:
 ```
 gradlew.bat runServer

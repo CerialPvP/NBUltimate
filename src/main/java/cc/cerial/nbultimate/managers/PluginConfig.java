@@ -7,10 +7,9 @@ import org.simpleyaml.configuration.file.YamlFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.CompactNumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class PluginConfig {
     private static final File CONFIG_FILE = new File(NBUltimate.get().getDataFolder(), "config.yml");
@@ -79,6 +78,25 @@ public class PluginConfig {
 
 
         /*
+          -- YAW ROUNDING --
+         */
+
+        entries.add(new ConfigEntry(this, "yaw-accuracy", Integer.class, 4, """
+                Yaw Accuracy
+                • When NBUltimate is loaded, it pre-calculates all sin/cos values from 0 to 360 degrees.
+                • Now, NBUltimate doesn't calculate just from 0, 1, 2 until 360, it counts from
+                  (assuming this config value is 4) 0.0001, 0.0002, 0.0003 all the way until 360.
+                • NBUltimate uses all precalculated sin/cos values in order to calculate the panning.
+                • In Bukkit, the player's yaw has a 6 decimal accuracy, which means in order to get
+                  as accurate panning as possible, we need to calculate sin/cos values up to 6 decimals
+                  (this means we do 360*1,000,000=720 MILLION calculations on startup)
+                • If you want to give up some of the accuracy, you can change the accuracy here.
+                
+                - Allowed Type: Integer (3)
+                - Default Value: 4"""));
+
+
+        /*
          -- PRIORITY --
          */
 
@@ -103,6 +121,56 @@ public class PluginConfig {
                 
                 - Allowed Type: Double-precision floating number (3.1415926535)
                 - Default Value: 2.2"""));
+
+        /*
+          -- EXPERIMENTAL NPS --
+         */
+        this.yamlFile.setComment("current-notes", """
+                Current Notes
+                • This adds a "Notes" section to the progress bar, displaying the amount of current played notes.
+                • The way this works is like this:
+                  • When NBUltimate is going to play a sound, it "simulates" the sound playing.
+                  • Basically, there is a list of sounds currently played, and when a sound is played, it gets
+                    added to that list, and removed after the length of the sound has passed.
+                  • For example, if the current played sound is 500 milliseconds, that sound will stay in the
+                    list for 500 milliseconds. Keep in mind if a sound is less than 50 milliseconds, it will be
+                    in the list for 50 milliseconds, no less (due to Minecraft not allowing anything below 1 tick).
+                • If you have enabled this feature for the first time, you may need to restart your server or
+                  run /nb downloadresources, in order to download resource packs.
+                • NOTE: Minecraft assets are downloaded from mcasset.cloud, which isn't affiliated
+                        with Mojang nor Microsoft. NBUltimate is also not affiliated with Mojang
+                        nor Microsoft, the assets are being used for this feature.
+                • If you have enabled this feature before, disable the config toggle, and optionally,
+                  delete the downloaded resource packs.
+                """);
+
+        entries.add(new ConfigEntry(this, "current-notes.enabled", Boolean.class, false, """
+                Current Notes - Toggle
+                • Enables the Current Notes feature.
+                • For more information, look at the comment above.
+                
+                - Allowed Type: boolean (true/false)
+                - Default Value: false"""));
+
+        this.yamlFile.setComment("current-notes.custom-packs", """
+                Current Notes - Custom Resource Packs
+                • If your server has a resource pack with custom sounds, you should provide them here.
+                • The format you provide custom sounds is by providing the namespace of your resource pack
+                  and a direct URL to download it.
+                • For more information about namespaces, visit the Minecraft Wiki article about it:
+                  https://minecraft.wiki/w/Resource_location#Namespaces.
+                • If you aren't sure on which namespace your resource pack uses, you can check by unzipping
+                  your resource pack, visiting the "assets" folder and checking what folders exist in there.
+                  If more than 1 folder exist, go to one of the folders, and check if a "sounds" folder is present.
+                  If there isn't a sounds folder, check the other folders. The folder with a sounds folder is
+                  the one you should provide to NBUltimate.
+                • A quick note: If your resource pack overrides existing Minecraft sounds, NBUltimate will NOT
+                  check for those, and instead use the default Minecraft sounds.
+                """);
+
+        this.yamlFile.addDefault("current-notes.custom-packs",
+                List.of(Map.of("minecraft", "https://github.com/RaphiMC/NoteBlockLib/raw/refs/heads/main/Extended%20Octave%20Range%20Notes%20Pack.zip")));
+
 
         validateConfig();
         saveFile();
@@ -201,7 +269,15 @@ public class PluginConfig {
         return this.yamlFile.getDouble("panning-spacing");
     }
 
+    public Map<String, Object> getCustomPacks() {
+        return this.yamlFile.getConfigurationSection("current-notes.custom-packs").getMapValues(false);
+    }
+
     public Version getConfigVersion() {
         return new Version(this.yamlFile.getString("version"));
+    }
+
+    public int getYawAccuracy() {
+        return this.yamlFile.getInt("yaw-accuracy");
     }
 }

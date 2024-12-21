@@ -83,6 +83,20 @@ public class NBPlaylist {
     }
 
     /**
+     * @return The first song in the playlist.
+     */
+    public Song<?,?,?> getFirst() {
+        return this.songs.getFirst();
+    }
+
+    /**
+     * @return The last song in the playlist.
+     */
+    public Song<?,?,?> getLast() {
+        return this.songs.getLast();
+    }
+
+    /**
      * @return The amount of songs in this playlist.
      */
     public int getAmount() {

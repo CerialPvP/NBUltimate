@@ -10,6 +10,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 
 import static cc.cerial.nbultimate.utils.Utils.format;
 
@@ -40,6 +41,8 @@ public class SongCacheManager {
 
         Utils.sendToOps(format("<yellow>%s Caching all songs in directory %s...</yellow>", Utils.getIcon(Utils.IconTypes.WAIT), dir));
 
+        // Compile RegEx patterns before the loop so we don't do that a lot of times
+        Pattern pattern = Pattern.compile("\\.(nbs|midi?|mcsp2|txt|notebot)", Pattern.CASE_INSENSITIVE);
         for (File loopFile: files) {
             // If the loop file is a directory, cache that directory.
             if (loopFile.isDirectory()) {
@@ -49,6 +52,8 @@ public class SongCacheManager {
 
             // If file is (somehow) not a file (impossible cuz of check above), and (is not a song file or disabled) continue.
             if (!loopFile.isFile() && (!SongFileUtils.isSongFile(loopFile.getName()) || SongFileUtils.isDisabled(loopFile.getName()))) continue;
+            // Check if the file name matches the regex, to prevent file format errors.
+            if (!pattern.matcher(loopFile.getName()).find()) continue;
             cachedSongs.remove(loopFile); // Prevent duplicate entries
             try {
                 long time = System.currentTimeMillis();

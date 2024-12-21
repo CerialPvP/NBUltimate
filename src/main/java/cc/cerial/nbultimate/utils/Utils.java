@@ -1,14 +1,28 @@
 package cc.cerial.nbultimate.utils;
 
+import cc.cerial.nbultimate.NBUltimate;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
+import org.bukkit.event.entity.ItemMergeEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import xyz.xenondevs.invui.item.builder.ItemBuilder;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
+import java.util.logging.Level;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 public class Utils {
     /**
@@ -22,8 +36,17 @@ public class Utils {
         return MiniMessage.miniMessage().deserialize("<gradient:#8a4007:#ed8b40><bold>NBUltimate</bold></gradient> <dark_gray>»</dark_gray> <reset>"+String.format(message, objects));
     }
 
+    /**
+     * Gives a formatted component with the NBUltimate prefix, and allows
+     * for formatting using {@link String#format} formatting.<br>
+     * <b>WARNING: This function does NOT produce the NBUltimate prefix, and disables italic decoration, as this
+     * is meant to be used with item lore. To use italic formatting, simply do {@code <!i>}.</b>
+     * @param message The message which you want to send.
+     * @param objects The formatted objects.
+     * @return A formatted component.
+     */
     public static Component formatNoPrefix(String message, Object... objects) {
-        return MiniMessage.miniMessage().deserialize(String.format(message, objects));
+        return MiniMessage.miniMessage().deserialize(String.format(message, objects)).decoration(TextDecoration.ITALIC, false);
     }
 
     public static void sendToOps(Component comp) {
@@ -97,6 +120,46 @@ public class Utils {
         return floor + ":" + mod;
     }
 
+    public static void unzip(File file) {
+        NBUltimate n = NBUltimate.get();
+        ZipFile f = null;
+        try {
+            f = new ZipFile(file);
+            Enumeration<? extends ZipEntry> entries = f.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                if (!entry.getName().startsWith("songs/") && !entry.getName().equalsIgnoreCase("README.txt")) continue;
+
+                File saveTo = new File(n.getDataFolder(), entry.getName());
+
+                if (entry.isDirectory()) {
+                    if (!saveTo.mkdirs()) n.getLogger().warning("Couldn't make directory "+saveTo+".");
+                    continue;
+                }
+
+                try (InputStream is = f.getInputStream(entry); FileOutputStream fos = new FileOutputStream(saveTo)) {
+                    byte[] buffer = new byte[8192];
+                    int length;
+                    while ((length = is.read(buffer)) != -1) {
+                        fos.write(buffer, 0, length);
+                    }
+                }
+            }
+            n.getLogger().info("Successfully generated all default songs.");
+        } catch (IOException e) {
+            n.getLogger().log(Level.SEVERE, "There was an error while generating files:", e);
+        } finally {
+            if (f != null) {
+                try {
+                    f.close();
+                } catch (IOException e) {
+                    n.getLogger().log(Level.SEVERE, "There was an error when closing the ZipFile:", e);
+                }
+            }
+
+        }
+    }
+
     @SuppressWarnings("StringConcatenationInLoop")
     public static String getProgressBar(double num1, double num2, int length) {
         int index = (int) Math.floor(num1 / num2 * length);
@@ -104,6 +167,18 @@ public class Utils {
         for (int i = 0; i < length; i++) {
             string = string + "▬";
         }
-        return "<#ed8b40>" + string.substring(0, index) + "<#8a4007>\uD83D\uDCA9</#8a4007>" + string.substring(index + 1) + "</#ed8b40>";
+        return "<#ed8b40>" + string.substring(0, index) + "<#8a4007>\uD83D\uDCA9</#8a4007>" +
+                string.substring((index + 1 > string.length()) ? index : index + 1) + "</#ed8b40>";
+    }
+
+    public static double roundDecimal(double number, int decimals) {
+        return Double.parseDouble(new DecimalFormat("#."+"#".repeat(decimals)).format(number));
+    }
+
+    public static ItemStack hideTooltip(ItemStack item) {
+        ItemMeta meta = item.getItemMeta();
+        meta.setHideTooltip(true);
+        item.setItemMeta(meta);
+        return item;
     }
 }

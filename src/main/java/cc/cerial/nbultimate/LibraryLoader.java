@@ -19,9 +19,6 @@ public class LibraryLoader implements PluginLoader {
     public static final Dependency CLASSGRAPH =
             new Dependency(new DefaultArtifact("io.github.classgraph:classgraph:4.8.176"), null);
 
-    public static final Dependency INVUI =
-            new Dependency(new DefaultArtifact("xyz.xenondevs.invui:invui:pom:1.37"), null);
-
 
     @Override
     public void classloader(@NotNull PluginClasspathBuilder classpathBuilder) {
@@ -31,12 +28,10 @@ public class LibraryLoader implements PluginLoader {
         resolver.addRepository(new RemoteRepository.Builder("JitPack", "default", "https://jitpack.io").build());
         resolver.addRepository(new RemoteRepository.Builder("Lenni0451 Snapshots", "default", "https://maven.lenni0451.net/snapshots").build());
         resolver.addRepository(new RemoteRepository.Builder("Maven Central", "default", "https://repo1.maven.org/maven2/").build());
-        resolver.addRepository(new RemoteRepository.Builder("xenondevs", "default", "https://repo.xenondevs.xyz/releases/").build());
 
         resolver.addDependency(SIMPLE_YAML);
         resolver.addDependency(NOTEBLOCKLIB);
         resolver.addDependency(CLASSGRAPH);
-        resolver.addDependency(INVUI);
 
         classpathBuilder.addLibrary(resolver);
     }

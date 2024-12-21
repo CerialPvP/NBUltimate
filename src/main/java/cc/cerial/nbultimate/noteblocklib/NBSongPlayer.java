@@ -9,16 +9,22 @@ import net.raphimc.noteblocklib.format.nbs.model.NbsCustomInstrument;
 import net.raphimc.noteblocklib.model.Song;
 import net.raphimc.noteblocklib.player.SongPlayer;
 import net.raphimc.noteblocklib.util.SongResampler;
+import net.raphimc.noteblocklib.util.SongUtil;
 import org.apache.commons.lang3.tuple.Pair;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Range;
 
 import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
+
+import static cc.cerial.nbultimate.utils.Utils.format;
 
 /**
  * An extended version of {@link SongPlayer}.
@@ -41,7 +47,7 @@ public class NBSongPlayer extends SongPlayer {
         private String name = "A song player";
         private Runnable stopEvent;
         private Runnable skipEvent;
-        private Set<Player> players = new HashSet<>();
+        private Pair<Supplier<Set<Player>>, Integer> playerGetter;
         private NBPlaylist playlist;
 
         /**
@@ -59,9 +65,6 @@ public class NBSongPlayer extends SongPlayer {
          * Sets a new name for this song player. By default, the name is "A song player".
          * @param value The new value.
          * @return This class, for method chaining.
-         *
-         *
-         * 
          */
         public Builder name(String value) {
             this.name = value;
@@ -101,12 +104,18 @@ public class NBSongPlayer extends SongPlayer {
 
         /**
          * <h3>REQUIRED VALUE</h3>
-         * Sets the list of players which can hear the song(s) in this {@link NBSongPlayer}.
-         * @param players The players you want to add.
+         * Now, you may ask, why is this a {@link Runnable} and not simply an array of players?<br>
+         * My answer to this is, you can simply provide a function in here, so that NBSongPlayer will automatically
+         * update the player list. This is good when for example, you want all players in your server to hear the music
+         * you're playing, but you also want new people to hear your music, or if you're using something like WorldGuard
+         * to play regional music, and you want people only in a specific region to hear your music.
+         * @param playerGetter The function that supplies the players.
+         * @param period How frequent the provided function should run. The period is in ticks, and can be from 10
+         *               (0.5 seconds) to 100 ticks (5 seconds)
          * @return This class, for method chaining.
          */
-        public Builder players(@NotNull Player... players) {
-            this.players.addAll(List.of(players));
+        public Builder players(@NotNull Supplier<Set<Player>> playerGetter, @Range(from = 10, to = 100) int period) {
+            this.playerGetter = Pair.of(playerGetter, period);
             return this;
         }
 
@@ -197,8 +206,8 @@ public class NBSongPlayer extends SongPlayer {
             // Throw exceptions if playlist or player is not set
             if (this.playlist == null)
                 throw new MissingValuesException("The playlist value is missing. Call NBSongPlayer.Builder#playlist(NBPlaylist) to add a song.");
-            else if (this.players.isEmpty())
-                throw new MissingValuesException("The players set is empty. Call NBSongPlayer.Builder#addPlayers(Player...) to add players.");
+            else if (this.playerGetter == null)
+                throw new MissingValuesException("The player getter function is missing. Call NBSongPlayer.Builder#players(Runnable, int) to add a player getter function.");
             // Change mono value if the user didn't override the value.
             Song<?,?,?> newSong = this.playlist.get(0);
             if (!this.isMonoChanged) this.isMono = !(newSong instanceof NbsSong) && !(newSong instanceof MidiSong);
@@ -215,26 +224,27 @@ public class NBSongPlayer extends SongPlayer {
     private final boolean shouldDeduplicate;
     private final boolean shouldRemoveQuietNotes;
     private final boolean shouldBroadcast;
-    private final Set<Player> players;
+    private Pair<Supplier<Set<Player>>, Integer> playerGetter;
+    private BukkitTask playerGetterTask;
     private final NBPlaylist playlist;
     private final Runnable stopEvent;
     private final Runnable skipEvent;
+    private final String name;
     private NBCallback nbCallback;
     private Pair<Runnable, BukkitTask> progressTask;
+    private Set<Player> players;
 
     /**
      * A private constructor, used by {@link Builder}
      */
     private NBSongPlayer(Builder builder) {
-        super(builder.playlist.get(0).getView(),
-              new NBCallback(builder.playlist.get(0), builder.isMono,
-                             builder.shouldDeduplicate, builder.shouldRemoveQuietNotes));
-
+        super(builder.playlist.get(0).getView(), new NBCallback());
+        
         this.isMoreOctaves = builder.isMoreOctaves;
         this.showProgress = builder.showProgress;
         this.storeSongPlayer = builder.storeSongPlayer;
         this.priority = builder.priority;
-        this.players = builder.players;
+        this.playerGetter = builder.playerGetter;
         this.playlist = builder.playlist;
         this.isMono = builder.isMono;
         this.isMonoChanged = builder.isMonoChanged;
@@ -243,8 +253,14 @@ public class NBSongPlayer extends SongPlayer {
         this.shouldRemoveQuietNotes = builder.shouldRemoveQuietNotes;
         this.stopEvent = builder.stopEvent;
         this.skipEvent = builder.skipEvent;
+        this.name = builder.name;
         this.nbCallback = ((NBCallback) this.callback);
         this.nbCallback.attachSongPlayer(this);
+    }
+
+    @Override
+    public void setPaused(boolean paused) {
+        super.setPaused(paused);
     }
 
     /**
@@ -253,7 +269,22 @@ public class NBSongPlayer extends SongPlayer {
      */
     @Override
     public void play() throws IllegalStateException {
-        super.play();
+        this.playerGetterTask = Bukkit.getScheduler().runTaskTimer(NBUltimate.get(),
+                () -> {
+                    Set<Player> players = this.playerGetter.getLeft().get();
+                    if (players == null) this.setPaused(true); else this.players = players;
+                }, 0L, this.playerGetter.getRight());
+
+        // Modify song view
+        Song<?,?,?> song = this.playlist.getFirst();
+        if (this.shouldDeduplicate)
+            SongUtil.removeDoubleNotes(song.getView());
+        if (this.shouldRemoveQuietNotes)
+            SongUtil.removeSilentNotes(song.getView());
+
+        if (song instanceof NbsSong nbs) {
+            SongResampler.applyNbsTempoChangers(nbs);
+        }
 
         if (this.storeSongPlayer) {
             SongPlayerStorageManager manager = NBUltimate.getSongPlayerStorageManager();
@@ -268,6 +299,19 @@ public class NBSongPlayer extends SongPlayer {
             this.progressTask = Pair.of(task,
                     Bukkit.getScheduler().runTaskTimer(NBUltimate.get(), task, 0L, 2L));
         }
+
+        // Due to us running a player getter task, the callback complains there are
+        // no players, due to the scheduler running tasks on the next tick and not instantly
+        // (even when the delay param is set to 0 ticks).
+        Bukkit.getScheduler().scheduleSyncDelayedTask(NBUltimate.get(), super::play, 2L);
+    }
+
+    /**
+     * @return The players in this song player. This list is updated periodically according to the
+     *         player getter function provided to this song player.
+     */
+    public Set<Player> getPlayers() {
+        return this.players;
     }
 
     /**
@@ -309,7 +353,7 @@ public class NBSongPlayer extends SongPlayer {
         // Finally, we will set the SongPlayerCallback to a new callback!
         try {
             Field callbackField = this.getClass().getSuperclass().getDeclaredField("callback");
-            NBCallback callback = new NBCallback(newSong, this.isMono, this.shouldDeduplicate, this.shouldRemoveQuietNotes);
+            NBCallback callback = new NBCallback();
             callback.attachSongPlayer(this);
             setField(this, callbackField, callback);
             this.nbCallback = callback;
@@ -336,6 +380,7 @@ public class NBSongPlayer extends SongPlayer {
     @Override
     public void stop() {
         super.stop();
+        playerGetterTask.cancel();
         if (this.stopEvent != null && !this.getPlaylist().hasNext(1))
             this.stopEvent.run();
         if (this.storeSongPlayer && !this.getPlaylist().hasNext(1))
@@ -373,13 +418,6 @@ public class NBSongPlayer extends SongPlayer {
     }
 
     /**
-     * @return The players which are listening to music in this {@link NBSongPlayer}.
-     */
-    public Set<Player> getPlayers() {
-        return players;
-    }
-
-    /**
      * @return The playlist which is used by this {@link NBSongPlayer}.
      */
     public NBPlaylist getPlaylist() {
@@ -407,7 +445,19 @@ public class NBSongPlayer extends SongPlayer {
         return shouldRemoveQuietNotes;
     }
 
+    /**
+     * @return If this {@link SongPlayer} should broadcast information about played songs.
+     */
     public boolean shouldBroadcast() {
         return shouldBroadcast;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    @Override
+    public String toString() {
+        return "NBSongPlayer(name="+this.name+")";
     }
 }
